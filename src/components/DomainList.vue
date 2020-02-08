@@ -6,17 +6,19 @@
           <div class="col-md">
             <AppItemList
               title="Prefixos"
-              v-bind:items="prefixes"
-              v-on:addItem="addPrefix"
-              v-on:deleteItem="deletePrefix"
+              type="prefix"
+              v-bind:items="items.prefix"
+              v-on:addItem="addItem"
+              v-on:deleteItem="deleteItem"
             ></AppItemList>
           </div>
           <div class="col-md">
             <AppItemList
               title="Sufixos"
-              v-bind:items="suffixes"
-              v-on:addItem="addSuffix"
-              v-on:deleteItem="deleteSuffix"
+              type="suffix"
+              v-bind:items="items.suffix"
+              v-on:addItem="addItem"
+              v-on:deleteItem="deleteItem"
             ></AppItemList>
           </div>
         </div>
@@ -35,10 +37,24 @@
                   v-bind:key="domain.name"
                 >
                   <div class="row">
-                    <div class="col-md">
+                    <div class="col-md-6">
                       {{ domain.name }}
                     </div>
-                    <div class="col-">
+                    <div class="col-md-3">
+                      <span
+                        v-if="domain.available === true"
+                        class="badge badge-success"
+                      >
+                        Disponível
+                      </span>
+                      <span
+                        v-if="domain.available === false"
+                        class="badge badge-danger"
+                      >
+                        Não Disponível
+                      </span>
+                    </div>
+                    <div class="col-md-3 text-right">
                       <a
                         class="btn btn-info"
                         v-bind:href="domain.checkout"
@@ -46,6 +62,10 @@
                       >
                         <span class="fa fa-shopping-cart"></span>
                       </a>
+                      &nbsp;
+                      <button class="btn btn-info" @click="openDomain(domain)">
+                        <span class="fa fa-search"></span>
+                      </button>
                     </div>
                   </div>
                 </li>
@@ -59,8 +79,7 @@
 </template>
 
 <script>
-import "bootstrap/dist/css/bootstrap.min.css";
-import "font-awesome/css/font-awesome.min.css";
+import { mapState, mapActions } from "vuex";
 import AppItemList from "./AppItemList";
 
 export default {
@@ -69,44 +88,18 @@ export default {
     AppItemList
   },
   data: function() {
-    return {
-      prefixes: ["Air", "Let", "Mind"],
-      suffixes: ["Hub", "Plane", "Go"]
-    };
+    return {};
   },
   methods: {
-    addPrefix(prefix) {
-      this.prefixes.push(prefix);
-    },
-
-    deletePrefix(prefix) {
-      this.prefixes.splice(this.prefixes.indexOf(prefix), 1);
-    },
-
-    addSuffix(suffix) {
-      this.suffixes.push(suffix);
-    },
-
-    deleteSuffix(suffix) {
-      this.suffixes.splice(this.suffixes.indexOf(suffix), 1);
+    ...mapActions(["addItem", "deleteItem", "getItems", "generateDomains"]),
+    openDomain(domain) {
+      this.$router.push({
+        path: `/domains/${domain.name}`
+      });
     }
   },
   computed: {
-    domains() {
-      const domains = [];
-      for (const prefix of this.prefixes) {
-        for (const suffix of this.suffixes) {
-          const name = prefix + suffix;
-          const url = name.toLowerCase();
-          const checkout = `https://checkout.hostgator.com.br/?a=add&sld=${url}&tld=.com.br`;
-          domains.push({
-            name,
-            checkout
-          });
-        }
-      }
-      return domains;
-    }
+    ...mapState(["items", "domains"])
   }
 };
 </script>
